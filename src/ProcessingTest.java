@@ -1,3 +1,4 @@
+import com.sun.tools.javac.util.ArrayUtils;
 import java.awt.FlowLayout;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
@@ -20,13 +21,22 @@ import org.opencv.imgproc.*;
 import org.opencv.objdetect.CascadeClassifier;
 import org.opencv.objdetect.Objdetect;
 import java.nio.ByteBuffer;
-import sun.rmi.rmic.iiop.ClassPathLoader;
 
+/**
+ * This is the final project of INFO 201
+ *
+ * @author Jincheng He
+ */
 public class ProcessingTest extends PApplet {
+
+
+  private final static int scene_width = 1280;
+  private final static int scene_height = 720;
 
   VideoCapture cap;
   Mat fm;
-  Ball ball = new Ball();
+  Ball ball = new Ball(700, 30, 70, 8, -2, 1);
+  ArrayList<Face> faces_info = new ArrayList<>();
 
   CascadeClassifier face;
 //  File faceFile = new File("haarcascade_frontalface_alt.xml");
@@ -37,23 +47,24 @@ public class ProcessingTest extends PApplet {
 
 
   public void settings() {
-    size(1280, 720);
+    size(scene_width, scene_height);
   }
 
 
   public void setup() {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-    facebook = new CascadeClassifier(base + "haarcascade_frontalface_default.xml");
+    facebook = new CascadeClassifier(base + "lbpcascade_frontalface_improved.xml");
     cap = new VideoCapture();
     cap.set(Videoio.CAP_PROP_FRAME_WIDTH, width);
     cap.set(Videoio.CAP_PROP_FRAME_HEIGHT, height);
     cap.open(Videoio.CAP_ANY);
     fm = new Mat();
-    frameRate(30);
+    frameRate(60);
   }
 
 
   public void draw() {
+    faces_info.clear();
     background(0);
     Mat tmp_mat = new Mat();
     cap.read(tmp_mat);
@@ -66,10 +77,22 @@ public class ProcessingTest extends PApplet {
 
     // Draw rectangles for faces
     for (int i = 0; i < face_rec.length; i++) {
-      rect(face_rec[i].x, face_rec[i].y, face_rec[i].width, face_rec[i].height);
+//      rect(face_rec[i].x, face_rec[i].y, face_rec[i].width, face_rec[i].height);
+      faces_info.add(new Face(face_rec[i].x, face_rec[i].y, face_rec[i].width, face_rec[i].height));
     }
 
+    drawFaceBalls(faces_info);
+
     tmp_mat.release();
+
+    // Update Ball
+    UpdateCollideWithFace(ball, faces_info);
+    UpdateCollideWithWall(ball);
+    ball.update();
+
+    // Draw Ball
+    fill(255);
+    ellipse(ball.getXposition(), ball.getYposition(), ball.getRadius() * 2, ball.getRadius() * 2);
   }
 
 
@@ -78,6 +101,43 @@ public class ProcessingTest extends PApplet {
     PApplet.main("ProcessingTest");
   }
 
+  public void drawFaceBalls(ArrayList<Face> faces_info) {
+    for (Face face : faces_info) {
+      fill(255);
+      ellipse(face.getXcenter(), face.getYcenter(), face.getRadius() * 2, face.getRadius() * 2);
+    }
+  }
+
+  public static void UpdateCollideWithFace(Ball ball, ArrayList<Face> faces_info) {
+    for (Face face : faces_info) {
+      if (ball.CheckCollideWithFace(face)) {
+        System.out.println("Collide");
+        ball.changeXdirection();
+        ball.changeYdirection();
+      } else {
+        System.out.println("Did not Collide");
+      }
+    }
+  }
+
+  public static void UpdateCollideWithWall(Ball ball) {
+    if (!(ball.getRadius() < ball.getXposition() && ball.getXposition() < scene_width - ball
+        .getRadius())) {
+      ball.changeXdirection();
+    }
+
+    if (!(ball.getRadius() < ball.getYposition() && ball.getYposition() < scene_height - ball.getRadius())) {
+      ball.changeYdirection();
+    }
+  }
+
+
+  /**
+   * Get Rects which store the information about the rectangle of detected faces
+   *
+   * @param image Mat from Opencv
+   * @return return Rect[]
+   */
   public static Rect[] getFace(Mat image) {
     MatOfRect face = new MatOfRect();
     facebook.detectMultiScale(image, face);
@@ -93,6 +153,12 @@ public class ProcessingTest extends PApplet {
     return rects;
   }
 
+  /**
+   * Convert Mat from Opencv to BufferedImage
+   *
+   * @param m Mat from Opencv
+   * @return return BufferedImage
+   */
   public BufferedImage Mat2BufferedImage(Mat m) {
     // Fastest code
     // output can be assigned either to a BufferedImage or to an Image
@@ -111,8 +177,12 @@ public class ProcessingTest extends PApplet {
   }
 
 
+  /**
+   * Display Image
+   *
+   * @param img2 Image which need to be displayed
+   */
   public void displayImage(Image img2) {
-    //BufferedImage img=ImageIO.read(new File("/HelloOpenCV/lena.png"));
     ImageIcon icon = new ImageIcon(img2);
     JFrame frame = new JFrame();
     frame.setLayout(new FlowLayout());
@@ -125,6 +195,12 @@ public class ProcessingTest extends PApplet {
   }
 
 
+  /**
+   * Change Mat from Opencv to the PImage instance
+   *
+   * @param m Mat from Opencv
+   * @return return PImage instance
+   */
   public PImage matToImg(Mat m) {
     PImage im = createImage(m.cols(), m.rows(), ARGB);
     ByteBuffer b = ByteBuffer.allocate(m.rows() * m.cols() * m.channels());
