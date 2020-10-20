@@ -30,7 +30,7 @@ public class ProcessingTest extends PApplet {
 
   VideoCapture cap;
   Mat fm;
-  Ball ball = new Ball(700, 30, 70, 8, -2, 1);
+  Ball ball = new Ball(700, 70, 70, 8, -2, 1);
   ArrayList<Face> faces_info = new ArrayList<>();
 
   public static String base = "/Users/jincheng/Desktop/INFO_PROJ/resources/";
@@ -91,6 +91,11 @@ public class ProcessingTest extends PApplet {
     PApplet.main("ProcessingTest");
   }
 
+  /**
+   * Visualize all those faces using circle
+   *
+   * @param faces_info All faces' information
+   */
   public void drawFaceBalls(ArrayList<Face> faces_info) {
     for (Face face : faces_info) {
       fill(255);
@@ -98,6 +103,12 @@ public class ProcessingTest extends PApplet {
     }
   }
 
+  /**
+   * This is the update between ball and faces
+   *
+   * @param ball       The ball being updated
+   * @param faces_info All those faces
+   */
   public static void UpdateCollideWithFace(Ball ball, ArrayList<Face> faces_info) {
     for (Face face : faces_info) {
       if (ball.CheckCollideWithFace(face)) {
@@ -110,6 +121,11 @@ public class ProcessingTest extends PApplet {
     }
   }
 
+  /**
+   * This is the update between ball and wall
+   *
+   * @param ball The ball being updated
+   */
   public static void UpdateCollideWithWall(Ball ball) {
     if (!(ball.getRadius() < ball.getXposition() && ball.getXposition() < scene_width - ball
         .getRadius())) {
