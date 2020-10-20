@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="gstreamer-1">
+    <CLASSES />
+    <JAVADOC />
+    <NATIVE>
+      <root url="file://$USER_HOME$/Documents/Processing/libraries/video/library/macosx/gstreamer-1.0" />
+      <root url="file://$USER_HOME$/Documents/Processing/libraries/video/library/macosx" />
+    </NATIVE>
+    <SOURCES />
+  </library>
+</component>
