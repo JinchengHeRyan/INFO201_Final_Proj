@@ -26,6 +26,7 @@ public class ProcessingTest extends PApplet {
 
   VideoCapture cap;
   Mat fm;
+  Ball ball = new Ball();
 
   CascadeClassifier face;
 //  File faceFile = new File("haarcascade_frontalface_alt.xml");
