@@ -1,25 +1,18 @@
-import com.sun.tools.javac.util.ArrayUtils;
 import java.awt.FlowLayout;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.videoio.VideoCapture;
 import processing.core.PApplet;
 import processing.core.PImage;
-import processing.core.*;
-import processing.video.*;
 import org.opencv.videoio.*;
 import org.opencv.core.*;
 import org.opencv.imgproc.*;
 import org.opencv.objdetect.CascadeClassifier;
-import org.opencv.objdetect.Objdetect;
 import java.nio.ByteBuffer;
 
 /**
@@ -33,14 +26,12 @@ public class ProcessingTest extends PApplet {
   private final static int scene_width = 1280;
   private final static int scene_height = 720;
 
+  Wall wall = new Wall(scene_width, scene_height);
+
   VideoCapture cap;
   Mat fm;
   Ball ball = new Ball(700, 30, 70, 8, -2, 1);
   ArrayList<Face> faces_info = new ArrayList<>();
-
-  CascadeClassifier face;
-//  File faceFile = new File("haarcascade_frontalface_alt.xml");
-//  ClassLoader classLoader = this.getClass().getClassLoader();
 
   public static String base = "/Users/jincheng/Desktop/INFO_PROJ/resources/";
   public static CascadeClassifier facebook;
@@ -77,11 +68,10 @@ public class ProcessingTest extends PApplet {
 
     // Draw rectangles for faces
     for (int i = 0; i < face_rec.length; i++) {
-//      rect(face_rec[i].x, face_rec[i].y, face_rec[i].width, face_rec[i].height);
       faces_info.add(new Face(face_rec[i].x, face_rec[i].y, face_rec[i].width, face_rec[i].height));
     }
 
-    drawFaceBalls(faces_info);
+//    drawFaceBalls(faces_info);
 
     tmp_mat.release();
 
@@ -123,12 +113,29 @@ public class ProcessingTest extends PApplet {
   public static void UpdateCollideWithWall(Ball ball) {
     if (!(ball.getRadius() < ball.getXposition() && ball.getXposition() < scene_width - ball
         .getRadius())) {
-      ball.changeXdirection();
+
+      if (ball.isLastCollideWallState()) {
+        return;
+
+      } else {
+        ball.setLastCollideWallState();
+        ball.changeXdirection();
+      }
     }
 
-    if (!(ball.getRadius() < ball.getYposition() && ball.getYposition() < scene_height - ball.getRadius())) {
-      ball.changeYdirection();
+    if (!(ball.getRadius() < ball.getYposition() && ball.getYposition() < scene_height - ball
+        .getRadius())) {
+
+      if (ball.isLastCollideWallState()) {
+        return;
+
+      } else {
+        ball.setLastCollideFaceState();
+        ball.changeYdirection();
+      }
     }
+    ball.unsetLastCollideWallState();
+    return;
   }
 
 
@@ -142,14 +149,6 @@ public class ProcessingTest extends PApplet {
     MatOfRect face = new MatOfRect();
     facebook.detectMultiScale(image, face);
     Rect[] rects = face.toArray();
-//    for (int i = 0; i < rects.length; i++) {
-//      Imgproc.rectangle(image, new Point(rects[i].x, rects[i].y),
-//          new Point(rects[i].x + rects[i].width, rects[i].y + rects[i].height),
-//          new Scalar(0, 255, 0));
-//      Imgproc.putText(image, "Human", new Point(rects[i].x, rects[i].y),
-//          Imgproc.COLOR_BayerBG2BGR_EA, 1.0,
-//          new Scalar(0, 255, 0), 1, Imgproc.LINE_AA, false);
-//    }
     return rects;
   }
 

@@ -6,6 +6,8 @@ public class Ball {
   private int Xspeed;
   private int Yspeed;
   private int gravity;
+  private boolean lastCollideFaceState = false;
+  private boolean lastCollideWallState = false;
 
   public Ball(int Xposition, int Yposition, int radius, int Xspeed, int Yspeed, int gravity) {
     this.Xposition = Xposition;
@@ -56,6 +58,14 @@ public class Ball {
     return radius;
   }
 
+  public boolean isLastCollideFaceState() {
+    return lastCollideFaceState;
+  }
+
+  public boolean isLastCollideWallState() {
+    return lastCollideWallState;
+  }
+
   public void setGravity(int gravity) {
     this.gravity = gravity;
   }
@@ -81,6 +91,34 @@ public class Ball {
   public boolean CheckCollideWithFace(Face face) {
     double distance = Math.sqrt(Math.pow(this.getXposition() - face.getXcenter(), 2) + Math
         .pow(this.getYposition() - face.getYcenter(), 2));
-    return distance < this.getRadius() + face.getRadius();
+
+    boolean temp_ans = distance < this.getRadius() + face.getRadius();
+    if (temp_ans && lastCollideFaceState) {
+      return false;
+    }
+    if (temp_ans && !lastCollideFaceState) {
+      this.setLastCollideFaceState();
+      return true;
+    }
+    if (!temp_ans) {
+      this.unsetLastCollideFaceState();
+    }
+    return false;
+  }
+
+  public void setLastCollideFaceState() {
+    this.lastCollideFaceState = true;
+  }
+
+  public void unsetLastCollideFaceState() {
+    this.lastCollideFaceState = false;
+  }
+
+  public void setLastCollideWallState() {
+    this.lastCollideWallState = true;
+  }
+
+  public void unsetLastCollideWallState() {
+    this.lastCollideWallState = false;
   }
 }
