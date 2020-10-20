@@ -2,10 +2,13 @@ import java.awt.FlowLayout;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.videoio.VideoCapture;
 import processing.core.PApplet;
 import processing.core.PImage;
@@ -17,11 +20,19 @@ import org.opencv.imgproc.*;
 import org.opencv.objdetect.CascadeClassifier;
 import org.opencv.objdetect.Objdetect;
 import java.nio.ByteBuffer;
+import sun.rmi.rmic.iiop.ClassPathLoader;
 
 public class ProcessingTest extends PApplet {
 
   VideoCapture cap;
   Mat fm;
+
+  CascadeClassifier face;
+//  File faceFile = new File("haarcascade_frontalface_alt.xml");
+//  ClassLoader classLoader = this.getClass().getClassLoader();
+
+  public static String base = "/Users/jincheng/Desktop/INFO_PROJ/resources/";
+  public static CascadeClassifier facebook;
 
 
   public void settings() {
@@ -31,6 +42,7 @@ public class ProcessingTest extends PApplet {
 
   public void setup() {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+    facebook = new CascadeClassifier(base + "haarcascade_frontalface_default.xml");
     cap = new VideoCapture();
     cap.set(Videoio.CAP_PROP_FRAME_WIDTH, width);
     cap.set(Videoio.CAP_PROP_FRAME_HEIGHT, height);
@@ -41,12 +53,39 @@ public class ProcessingTest extends PApplet {
 
 
   public void draw() {
+//    System.out.println(faceFile.getAbsolutePath());
+
     background(0);
     Mat tmp_mat = new Mat();
     cap.read(tmp_mat);
-    Imgproc.cvtColor(tmp_mat, fm, Imgproc.COLOR_BGR2RGBA);
-    PImage img = matToImg(fm);
-    image(img, 0, 0);
+//    Imgproc.cvtColor(tmp_mat, fm, Imgproc.COLOR_BGR2RGBA);
+//    PImage img = matToImg(fm);
+//    image(img, 0, 0);
+
+    // Begin face detection
+//    MatOfRect face = new MatOfRect();
+//    facebook.detectMultiScale(tmp_mat, face);
+//    Rect[] rects = face.toArray();
+//    System.out.println("Detect " + rects.length + " faces");
+//
+//    MatOfRect faceVectors = new MatOfRect();
+//    for (Rect rect : faceVectors.toArray()) {
+//      Imgproc.rectangle(image, new Point(rect.x, rect.y),
+//          new Point(rect.x + rect.width, rect.y + rect.height),
+//          new Scalar(0, 255, 0));
+//    }
+//    Imgcodecs.imwrite("faceDetection.png", image);
+
+    try {
+      Mat face_with_rec = getFace(tmp_mat);
+      Imgproc.cvtColor(face_with_rec, fm, Imgproc.COLOR_BGR2RGBA);
+      PImage img = matToImg(fm);
+      image(img, 0, 0);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+
     tmp_mat.release();
   }
 
@@ -54,6 +93,21 @@ public class ProcessingTest extends PApplet {
   public static void main(String[] args) {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     PApplet.main("ProcessingTest");
+  }
+
+  public static Mat getFace(Mat image) throws IOException {
+    MatOfRect face = new MatOfRect();
+    facebook.detectMultiScale(image, face);
+    Rect[] rects = face.toArray();
+    for (int i = 0; i < rects.length; i++) {
+      Imgproc.rectangle(image, new Point(rects[i].x, rects[i].y),
+          new Point(rects[i].x + rects[i].width, rects[i].y + rects[i].height),
+          new Scalar(0, 255, 0));
+      Imgproc.putText(image, "Human", new Point(rects[i].x, rects[i].y),
+          Imgproc.COLOR_BayerBG2BGR_EA, 1.0,
+          new Scalar(0, 255, 0), 1, Imgproc.LINE_AA, false);
+    }
+    return image;
   }
 
   public BufferedImage Mat2BufferedImage(Mat m) {
