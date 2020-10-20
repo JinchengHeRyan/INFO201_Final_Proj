@@ -53,38 +53,20 @@ public class ProcessingTest extends PApplet {
 
 
   public void draw() {
-//    System.out.println(faceFile.getAbsolutePath());
-
     background(0);
     Mat tmp_mat = new Mat();
     cap.read(tmp_mat);
-//    Imgproc.cvtColor(tmp_mat, fm, Imgproc.COLOR_BGR2RGBA);
-//    PImage img = matToImg(fm);
-//    image(img, 0, 0);
 
-    // Begin face detection
-//    MatOfRect face = new MatOfRect();
-//    facebook.detectMultiScale(tmp_mat, face);
-//    Rect[] rects = face.toArray();
-//    System.out.println("Detect " + rects.length + " faces");
-//
-//    MatOfRect faceVectors = new MatOfRect();
-//    for (Rect rect : faceVectors.toArray()) {
-//      Imgproc.rectangle(image, new Point(rect.x, rect.y),
-//          new Point(rect.x + rect.width, rect.y + rect.height),
-//          new Scalar(0, 255, 0));
-//    }
-//    Imgcodecs.imwrite("faceDetection.png", image);
+    Rect[] face_rec = getFace(tmp_mat);
 
-    try {
-      Mat face_with_rec = getFace(tmp_mat);
-      Imgproc.cvtColor(face_with_rec, fm, Imgproc.COLOR_BGR2RGBA);
-      PImage img = matToImg(fm);
-      image(img, 0, 0);
-    } catch (IOException e) {
-      e.printStackTrace();
+    Imgproc.cvtColor(tmp_mat, fm, Imgproc.COLOR_BGR2RGBA);
+    PImage img = matToImg(fm);
+    image(img, 0, 0);
+
+    // Draw rectangles for faces
+    for (int i = 0; i < face_rec.length; i++) {
+      rect(face_rec[i].x, face_rec[i].y, face_rec[i].width, face_rec[i].height);
     }
-
 
     tmp_mat.release();
   }
@@ -95,19 +77,19 @@ public class ProcessingTest extends PApplet {
     PApplet.main("ProcessingTest");
   }
 
-  public static Mat getFace(Mat image) throws IOException {
+  public static Rect[] getFace(Mat image) {
     MatOfRect face = new MatOfRect();
     facebook.detectMultiScale(image, face);
     Rect[] rects = face.toArray();
-    for (int i = 0; i < rects.length; i++) {
-      Imgproc.rectangle(image, new Point(rects[i].x, rects[i].y),
-          new Point(rects[i].x + rects[i].width, rects[i].y + rects[i].height),
-          new Scalar(0, 255, 0));
-      Imgproc.putText(image, "Human", new Point(rects[i].x, rects[i].y),
-          Imgproc.COLOR_BayerBG2BGR_EA, 1.0,
-          new Scalar(0, 255, 0), 1, Imgproc.LINE_AA, false);
-    }
-    return image;
+//    for (int i = 0; i < rects.length; i++) {
+//      Imgproc.rectangle(image, new Point(rects[i].x, rects[i].y),
+//          new Point(rects[i].x + rects[i].width, rects[i].y + rects[i].height),
+//          new Scalar(0, 255, 0));
+//      Imgproc.putText(image, "Human", new Point(rects[i].x, rects[i].y),
+//          Imgproc.COLOR_BayerBG2BGR_EA, 1.0,
+//          new Scalar(0, 255, 0), 1, Imgproc.LINE_AA, false);
+//    }
+    return rects;
   }
 
   public BufferedImage Mat2BufferedImage(Mat m) {
