@@ -12,5 +12,8 @@
     <orderEntry type="library" name="video" level="project" />
     <orderEntry type="library" name="gstreamer-1" level="project" />
     <orderEntry type="library" name="code" level="project" />
+    <orderEntry type="library" name="arduino" level="project" />
+    <orderEntry type="library" name="serial" level="project" />
+    <orderEntry type="library" name="jssc" level="project" />
   </component>
 </module>

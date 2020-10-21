@@ -14,18 +14,20 @@ import org.opencv.core.*;
 import org.opencv.imgproc.*;
 import org.opencv.objdetect.CascadeClassifier;
 import java.nio.ByteBuffer;
+import cc.arduino.*;
 
 /**
  * This is the final project of INFO 201
  *
  * @author Jincheng He
  */
-public class ProcessingTest extends PApplet {
+public class HeadBallAR extends PApplet {
 
 
   private final static int scene_width = 1280;
   private final static int scene_height = 720;
 
+  Arduino arduino;
   Wall wall = new Wall(scene_width, scene_height);
 
   VideoCapture cap;
@@ -51,6 +53,13 @@ public class ProcessingTest extends PApplet {
     cap.open(Videoio.CAP_ANY);
     fm = new Mat();
     frameRate(60);
+
+    // Arduino setup
+    println(Arduino.list());
+    arduino = new Arduino(this, Arduino.list()[1], 57600);
+
+    arduino.pinMode(9, Arduino.INPUT);
+    arduino.pinMode(13, Arduino.OUTPUT);
   }
 
 
@@ -83,12 +92,21 @@ public class ProcessingTest extends PApplet {
     // Draw Ball
     fill(255);
     ellipse(ball.getXposition(), ball.getYposition(), ball.getRadius() * 2, ball.getRadius() * 2);
+
+    // Arduino interaction
+    if (arduino.digitalRead(9) == Arduino.HIGH) {
+      delay(500);
+      System.out.println("arduino botton activated");
+    }
+    else {
+      System.out.println("Did not detect arduino");
+    }
   }
 
 
   public static void main(String[] args) {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-    PApplet.main("ProcessingTest");
+    PApplet.main("HeadBallAR");
   }
 
   /**
@@ -112,11 +130,11 @@ public class ProcessingTest extends PApplet {
   public static void UpdateCollideWithFace(Ball ball, ArrayList<Face> faces_info) {
     for (Face face : faces_info) {
       if (ball.CheckCollideWithFace(face)) {
-        System.out.println("Collide");
+//        System.out.println("Collide");
         ball.changeXdirection();
         ball.changeYdirection();
       } else {
-        System.out.println("Did not Collide");
+//        System.out.println("Did not Collide");
       }
     }
   }
